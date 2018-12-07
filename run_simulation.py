@@ -3,7 +3,7 @@
 #
 # Code for running the simulations presented in the paper 
 # "Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models"
-
+from __future__ import print_function, division
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -113,7 +113,7 @@ simulation_params = settings_dict[conf]
 
 print("Running simulation name '{conf}' with {N} replications.".format(conf=conf, N=N))
 # running simulation
-np.random.seed(0)
+np.random.seed(123)
 results = []
 for rep in range(1, N + 1):
     for rho in rhos:
@@ -160,7 +160,7 @@ ax.set_xlabel('rho', fontsize='x-large')
 ax.set_ylabel('Model Error', fontsize='x-large')
 try:
     path = 'plots'
-    plt.savefig(os.path.join(path, 'plots/simulation_plot_{}.png'.format(conf)))
+    plt.savefig(os.path.join(path, 'simulation_plot_{}.png'.format(conf)))
 except:
     plt.savefig('simulation_plot_{}.png'.format(conf))
-print("Done.")
+print("\nDone.")

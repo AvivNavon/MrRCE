@@ -3,6 +3,7 @@
 #
 # This is the implementation for the MrRCE algorithm, described in
 # the paper "Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models"
+from __future__ import print_function, division
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -10,8 +11,7 @@ import numpy as np
 from numpy import linalg as LA
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
-from sklearn.covariance import graph_lasso, empirical_covariance, GraphLassoCV
-from inverse_covariance import QuicGraphLassoCV, QuicGraphLasso
+from sklearn.covariance import graph_lasso, empirical_covariance, GraphicalLassoCV
 from scipy.optimize import minimize
 from sklearn.linear_model import LinearRegression
 from scipy.spatial.distance import mahalanobis
@@ -33,11 +33,6 @@ class MrRCE(object):
                  in two successive iterations is larger than the tolerance value.
     tol : same as tol_glasso but for (sigma, rho).
     init_B : Initial value for B, one of ['zero', 'ols']
-    gl_method One of 'gl' - regular GL alg., and 'quic' for 
-             Quadratic Approximation for Sparse Inverse Covariance Estimation
-             Hsieh, C. J., Sustik, M. A., Dhillon, I. S., & Ravikumar, P. (2014). 
-             QUIC: quadratic approximation for sparse inverse covariance estimation. 
-             The Journal of Machine Learning Research, 15(1), 2911-2947.
     cv : boolean. Whether to use CV during the model fitting process 
          (e.g for the selection of the regularization parameter for 
          the graphical lasso step)
@@ -54,17 +49,16 @@ class MrRCE(object):
                       (see sklearn.covariance.empirical_covariance)
     glasso_max_iter : maximal number of iterations for each iteration over
                       the Graphical Lasso alg.
-    n_lams : see `alphas` in sklearn.covariance.GraphLassoCV or `lams`
-             in inverse_covariance.QuicGraphLassoCV
+    n_lams : see `alphas` in sklearn.covariance.GraphicalLassoCV
     n_refinements : The number of times the grid is refined.
     n_folds : Number of CV folds.
     verbose : Boolean. Whether to print progress and messages
     """
     def __init__(self, max_iter = 40, cv = True, lam = 1e-1, tol_glasso = 1e-4,
-                 tol = 1e-5, init_B = 'zero', gl_method = 'quic', 
-                 init_guess = [1, .5], bounds = None, rhos = None, sigmas = None,
-                 exhaustive_search = False, assume_centered = False, glasso_max_iter = int(1e3),
-                 n_lams = 10, n_refinements = 5, n_folds = 3, verbose = False):
+                 tol = 1e-6, init_B = 'zero', init_guess = [1, .5], bounds = None, rhos = None, 
+                 sigmas = None, exhaustive_search = False, assume_centered = False, 
+                 glasso_max_iter = int(1e3), n_lams = 20, n_refinements = 5, n_folds = 3, 
+                 verbose = False):
         
         self.max_iter = max_iter
         self.cv = cv
@@ -72,9 +66,6 @@ class MrRCE(object):
         self.tol_glasso = tol_glasso
         self.tol = tol
         self.init_B = init_B
-        if gl_method not in ['quic', 'gl']:
-            raise ValueError("gl_method must be one of ['quic', 'gl'].")
-        self.gl_method = gl_method
         self.init_guess = init_guess
         self.bounds = ((0 + 1e-10, 5), (.0+1e-10, 1-1e-10)) if bounds is None else bounds
         self.rhos = np.linspace(.001, .999, 20) if rhos is None else rhos
@@ -271,57 +262,39 @@ class MrRCE(object):
             init_guess = np.array(init_guess)
         # CV
         if self.cv:
-            if self.gl_method == 'quic':
-                # GL with QUIC
-                qgl = QuicGraphLassoCV(lams = self.n_lams, 
-                                       max_iter = self.glasso_max_iter, 
-                                       Theta0 = Omega0, Sigma0 = Sigma0,
-                                       cv = self.n_folds)
-                qgl.fit(S_G)
-                Sigma, Omega = qgl.covariance_, qgl.precision_
-            else:
-                # GL no QUIC
-                try:
-                    gl = GraphLassoCV(alphas=self.n_lams, 
-                                      assume_centered=self.assume_centered, 
-                                      max_iter = self.glasso_max_iter, 
-                                      n_refinements = self.n_refinements,
-                                      cv = self.n_folds)
-                    gl.fit(S_G)
-                    Sigma, Omega = gl.covariance_, gl.precision_
-                except:
-                    if self.verbose:
-                        print("\nUsing LARS solver...")
-                    gl = GraphLassoCV(alphas=self.n_lams, 
-                                      assume_centered=self.assume_centered, 
-                                      max_iter = self.glasso_max_iter, 
-                                      n_refinements = self.n_refinements,
-                                      cv = self.n_folds,
-                                      mode = 'lars')
-                    gl.fit(S_G)
-                    Sigma, Omega = gl.covariance_, gl.precision_
+            try:
+                gl = GraphicalLassoCV(alphas=self.n_lams, 
+                                  assume_centered=self.assume_centered, 
+                                  max_iter = self.glasso_max_iter, 
+                                  n_refinements = self.n_refinements,
+                                  cv = self.n_folds)
+                gl.fit(S_G)
+                Sigma, Omega = gl.covariance_, gl.precision_
+            except:
+                if self.verbose:
+                    print("\nUsing LARS solver...")
+                gl = GraphicalLassoCV(alphas=self.n_lams, 
+                                  assume_centered=self.assume_centered, 
+                                  max_iter = self.glasso_max_iter, 
+                                  n_refinements = self.n_refinements,
+                                  cv = self.n_folds,
+                                  mode = 'lars')
+                gl.fit(S_G)
+                Sigma, Omega = gl.covariance_, gl.precision_
         else:
-            if self.gl_method == 'quic':
-                # QUIC
-                qgl = QuicGraphLasso(lam = self.lam, 
-                                     max_iter = self.glasso_max_iter, 
-                                     Theta0 = Omega0, Sigma0 = Sigma0)
-                qgl.fit(S_G)
-                Sigma, Omega = qgl.covariance_, qgl.precision_
-            else:
-                # No QUIC
-                try:
-                    Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
-                                               cov_init = init_guess, 
-                                               max_iter = self.glasso_max_iter)
-                except:
-                    if self.verbose:
-                        print("\nUsing LARS solver...")
-                    # We prefer LARS for very sparse underlying graphs, where p > n.
-                    Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
-                                               cov_init = init_guess, 
-                                               max_iter = self.glasso_max_iter, 
-                                               mode = 'lars')
+            # No QUIC
+            try:
+                Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
+                                           cov_init = init_guess, 
+                                           max_iter = self.glasso_max_iter)
+            except:
+                if self.verbose:
+                    print("\nUsing LARS solver...")
+                # We prefer LARS for very sparse underlying graphs, where p > n.
+                Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
+                                           cov_init = init_guess, 
+                                           max_iter = self.glasso_max_iter, 
+                                           mode = 'lars')
         return Sigma, Omega
     
     def step_2(self, initial_guess, Sigma, maxiter = 100):

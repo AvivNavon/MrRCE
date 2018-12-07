@@ -48,7 +48,6 @@ Thumbs.db
 ############
 __pycache__
 .ipynb_checkpoints
-example.ipynb
 
 # folders #
 ###########

@@ -2,6 +2,19 @@
 
 This is the implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm.
 
+## Useful Links
+
+- [Code and examples](https://github.com/AvivNavon/MrRCE).
+- [Example](https://github.com/AvivNavon/MrRCE/example.ipynb)
+
+## Installation and Requirements
+
+Clone this repo and run
+
+```
+pip install -r requirements.txt
+```
+
 ## Simulations
 
 There are five simulations that can be easily executed:
@@ -29,7 +42,12 @@ This will run simulation <simulation name> with the default 200 replication. You
 ```
 python <simulation name> <N>
 ```
-where <N> is an integer for the number of replications.
+where `N` is an integer for the number of replications. For example, the following line,
+
+```
+python equi 100
+```
+will run the Equicorrelation simulation with 100 replications (for each value of the correlation coefficient $\rho$).
 
 ### Option 2
 
@@ -48,7 +66,7 @@ Example of running MrRCE:
 >>> m.rho # estimated correlation coefficient
 >>> m.sigma # estimated variance for coefficients
 >>> m.Sigma # estimated covariance matrix for the error terms
->>> m.Sigma # estimated precision matrix for the error terms
+>>> m.Omega # estimated precision matrix for the error terms
 ```
 
-See full example at this notebook.
+See full example at [this](https://github.com/AvivNavon/MrRCE/example.ipynb) notebook.
