@@ -4,8 +4,8 @@ This is the implementation of the Multivariate random Regression with Covariance
 
 ## Useful Links
 
-- [Code and examples](https://github.com/AvivNavon/MrRCE).
-- [Example](https://github.com/AvivNavon/MrRCE/example.ipynb)
+- [Code and examples](https://github.com/AvivNavon/MrRCE)
+- [Example](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb)
 
 ## Installation and Requirements
 
@@ -42,7 +42,7 @@ This will run simulation <simulation name> with the default 200 replication. You
 ```
 python <simulation name> <N>
 ```
-where `N` is an integer for the number of replications. For example, the following line,
+where `<N>` is an integer for the number of replications. For example, the following line,
 
 ```
 python equi 100
@@ -54,7 +54,7 @@ will run the Equicorrelation simulation with 100 replications (for each value of
 ```
 ./run_simulation.sh <simulation name> [<N>]
 ```
-## MrRCE
+## Example
 
 Example of running MrRCE:
 
@@ -69,4 +69,4 @@ Example of running MrRCE:
 >>> m.Omega # estimated precision matrix for the error terms
 ```
 
-See full example at [this](https://github.com/AvivNavon/MrRCE/example.ipynb) notebook.
+See full example at [this](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb) notebook.
