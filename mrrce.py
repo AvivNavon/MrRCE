@@ -11,7 +11,7 @@ import numpy as np
 from numpy import linalg as LA
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
-from sklearn.covariance import graph_lasso, empirical_covariance, GraphicalLassoCV
+from sklearn.covariance import graphical_lasso, empirical_covariance, GraphicalLassoCV
 from scipy.optimize import minimize
 from sklearn.linear_model import LinearRegression
 from scipy.spatial.distance import mahalanobis
@@ -54,8 +54,8 @@ class MrRCE(object):
     n_folds : Number of CV folds.
     verbose : Boolean. Whether to print progress and messages
     """
-    def __init__(self, max_iter = 40, cv = True, lam = 1e-1, tol_glasso = 1e-4,
-                 tol = 1e-6, init_B = 'zero', init_guess = [1, .5], bounds = None, rhos = None, 
+    def __init__(self, max_iter = 20, cv = True, lam = 1.5e-1, tol_glasso = 1e-1,
+                 tol = 1e-3, init_B = 'zero', init_guess = [1, .5], bounds = None, rhos = None, 
                  sigmas = None, exhaustive_search = False, assume_centered = False, 
                  glasso_max_iter = int(1e3), n_lams = 20, n_refinements = 5, n_folds = 3, 
                  verbose = False):
@@ -214,8 +214,7 @@ class MrRCE(object):
                 print("\rIter number {iter_num} ".format(iter_num = iter_num), end = "")
             # steps
             ## 1
-            Sigma, Omega = self.step_1(B_star = B_star_hat, init_guess = Sigma_old, 
-                                       Omega0 = Omega_old, Sigma0 = Sigma_old)
+            Sigma, Omega = self.step_1(B_star = B_star_hat, init_guess = Sigma_old)
             ## 2
             if self.exhaustive_search:
                 sigma, rho = self.find_minima(self.Neg_Log_Likelihood, 
@@ -251,8 +250,7 @@ class MrRCE(object):
         self.sigma, self.rho = sigma, rho
         self.iters = iter_num - 1
     
-    def step_1(self, B_star, init_guess = None, 
-               Omega0 = None, Sigma0 = None):
+    def step_1(self, B_star, init_guess = None):
         """
         Given B_star, we estimate Omega, the graphical lasso solution for the precision matrix
         """
@@ -264,37 +262,36 @@ class MrRCE(object):
         if self.cv:
             try:
                 gl = GraphicalLassoCV(alphas=self.n_lams, 
-                                  assume_centered=self.assume_centered, 
-                                  max_iter = self.glasso_max_iter, 
-                                  n_refinements = self.n_refinements,
-                                  cv = self.n_folds)
+                                      assume_centered=self.assume_centered, 
+                                      max_iter = self.glasso_max_iter,
+                                      n_refinements = self.n_refinements,
+                                      cv = self.n_folds)
                 gl.fit(S_G)
                 Sigma, Omega = gl.covariance_, gl.precision_
             except:
                 if self.verbose:
                     print("\nUsing LARS solver...")
                 gl = GraphicalLassoCV(alphas=self.n_lams, 
-                                  assume_centered=self.assume_centered, 
-                                  max_iter = self.glasso_max_iter, 
-                                  n_refinements = self.n_refinements,
-                                  cv = self.n_folds,
-                                  mode = 'lars')
+                                      assume_centered=self.assume_centered, 
+                                      max_iter = self.glasso_max_iter, 
+                                      n_refinements = self.n_refinements,
+                                      cv = self.n_folds,
+                                      mode = 'lars')
                 gl.fit(S_G)
                 Sigma, Omega = gl.covariance_, gl.precision_
         else:
-            # No QUIC
             try:
-                Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
-                                           cov_init = init_guess, 
-                                           max_iter = self.glasso_max_iter)
+                Sigma, Omega = graphical_lasso(emp_cov, alpha = self.lam, 
+                                               cov_init = init_guess, 
+                                               max_iter = self.glasso_max_iter)
             except:
                 if self.verbose:
                     print("\nUsing LARS solver...")
                 # We prefer LARS for very sparse underlying graphs, where p > n.
-                Sigma, Omega = graph_lasso(emp_cov, alpha = self.lam, 
-                                           cov_init = init_guess, 
-                                           max_iter = self.glasso_max_iter, 
-                                           mode = 'lars')
+                Sigma, Omega = graphical_lasso(emp_cov, alpha = self.lam, 
+                                               cov_init = init_guess, 
+                                               max_iter = self.glasso_max_iter, 
+                                               mode = 'lars')
         return Sigma, Omega
     
     def step_2(self, initial_guess, Sigma, maxiter = 100):
