@@ -1,10 +1,10 @@
 # Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models
 
-This is the implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm.
+This is an implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm.
 
 ## Useful Links
 
-- [Code and examples](https://github.com/AvivNavon/MrRCE)
+- [GitHub repo](https://github.com/AvivNavon/MrRCE)
 - [Example](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb)
 
 ## Installation and Requirements
@@ -47,7 +47,7 @@ where `<N>` is an integer for the number of replications. For example, the follo
 ```
 python equi 100
 ```
-will run the Equicorrelation simulation with 100 replications (for each value of the correlation coefficient $\rho$).
+will run the Equicorrelation simulation with 100 replications (for each value of the correlation coefficient, rho).
 
 ### Option 2
 
