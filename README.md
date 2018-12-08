@@ -47,7 +47,7 @@ python ar_dense 200
 will run the Autoregressive simulation with 200 replications (for each value of the correlation coefficient, rho), and the outcome should look like the following:
 
  <p align="center"> 
-    <img src="https://github.com/AvivNavon/MrRCE/blob/master/plots/simulation_plot_ar_dense.png" width="500">
+    <img src="https://github.com/AvivNavon/MrRCE/blob/master/plots/simulation_plot_ar_dense.png" width="700">
  </p>
 
 ### Option 2
