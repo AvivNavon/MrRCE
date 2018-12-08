@@ -54,7 +54,7 @@ class MrRCE(object):
     n_folds : Number of CV folds.
     verbose : Boolean. Whether to print progress and messages
     """
-    def __init__(self, max_iter = 20, cv = True, lam = 1.5e-1, tol_glasso = 1e-1,
+    def __init__(self, max_iter = 50, cv = True, lam = 1.5e-1, tol_glasso = 1e-1,
                  tol = 1e-3, init_B = 'zero', init_guess = [1, .5], bounds = None, rhos = None, 
                  sigmas = None, exhaustive_search = False, assume_centered = False, 
                  glasso_max_iter = int(1e3), n_lams = 20, n_refinements = 5, n_folds = 3, 
@@ -67,7 +67,7 @@ class MrRCE(object):
         self.tol = tol
         self.init_B = init_B
         self.init_guess = init_guess
-        self.bounds = ((0 + 1e-10, 5), (.0+1e-10, 1-1e-10)) if bounds is None else bounds
+        self.bounds = ((1e-3, 5.), (0., 1-1e-3)) if bounds is None else bounds
         self.rhos = np.linspace(.001, .999, 20) if rhos is None else rhos
         self.sigmas = np.linspace(.01, 2, 20) if sigmas is None else sigmas
         self.exhaustive_search = exhaustive_search
@@ -165,7 +165,7 @@ class MrRCE(object):
     def fit(self, X, Y, cv = None, init_B = None, max_iter = None, 
             glasso_max_iter = None, init_guess = None, assume_centered = None):
         """
-        Assuming data is already transformed and of the required form
+        Fitting MrRCE
         
         Parametes
         ---------
@@ -185,7 +185,7 @@ class MrRCE(object):
         if self.init_B == 'zero':
             B_star_hat = np.zeros((self.p, self.q))
         elif self.init_B == 'ols':
-            B_star_hat = LinearRegression(fit_intercept = False).fit(self.X, self.Y).coef_.T
+            B_star_hat = LinearRegression(fit_intercept = False).fit(self.X_trans, self.Y_trans).coef_.T
         else:
             raise ValueError("\ninit_B should be one of 'zero', 'ols'.")
         # replace self.attr if attr is given

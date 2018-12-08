@@ -97,23 +97,22 @@ params_idntity = dict(
 n = 50,                          # num obs
 p = 20,                          # num predictors
 q = 5,                           # num tasks
-sigma = 1,                       # coeff variance
+sigma = .75,                       # coeff variance
 corr_x = .7,                     # grid of values for rho (correlation coefficient)
 sigma_err = 1,                   # correlation coefficient for predictors
-err_corr = .9,                   # correlation coefficient for errors
 g_sparse_level = .0,             # group sparsity level
 sparse_level = .2,               # sparsity level
 err_cov_type = 'identity'        # error covariance form. One of ['ar', 'equi', 'fgn', 'identity']
 )
 
 settings_dict = {'ar_sparse':params_ar_sparse, 'ar_dense':params_ar_dense,
-				 'equi':params_equi, 'fgn':params_fgn, 'identity':params_idntity}
+                 'equi':params_equi, 'fgn':params_fgn, 'identity':params_idntity}
 
 simulation_params = settings_dict[conf]
 
 print("Running simulation name '{conf}' with {N} replications.".format(conf=conf, N=N))
 # running simulation
-np.random.seed(123)
+np.random.seed(1) # for reproducibility
 results = []
 for rep in range(1, N + 1):
     for rho in rhos:
