@@ -34,7 +34,7 @@ In addition, it will create a plot of ME against the correlation parameter, and 
 python <simulation name>
 ```
 
-This will run simulation <simulation name> with the default 200 replication. You can also run:
+This will run the simulation <simulation name> with the default 200 replication. You can also run:
 
 ```
 python <simulation name> <N>
@@ -42,9 +42,13 @@ python <simulation name> <N>
 where `<N>` is an integer for the number of replications. For example, the following line,
 
 ```
-python ar_dense 100
+python ar_dense 200
 ```
-will run the Autoregressive simulation with 100 replications (for each value of the correlation coefficient, rho).
+will run the Autoregressive simulation with 200 replications (for each value of the correlation coefficient, rho), and the outcome should look like the following:
+
+ <p align="center"> 
+    <img src="https://github.com/AvivNavon/MrRCE/blob/master/plots/simulation_plot_ar_dense.png" width="500">
+ </p>
 
 ### Option 2
 
