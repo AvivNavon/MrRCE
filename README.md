@@ -1,6 +1,8 @@
 # Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models
 
-This is an implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm.
+This is an implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm, 
+designed to take advantage of correlations and similarities among responses and coefficients, in a multi-task regression framework
+(see the [paper](https://arxiv.org/abs/1812.03662) for details).
 
 ## Useful Links
 
