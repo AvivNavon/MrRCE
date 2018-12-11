@@ -61,15 +61,15 @@ will run the Autoregressive simulation with 200 replications (for each value of 
 
 Example of running MrRCE:
 
-```
->>> from mrrce import MrRCE
->>> m = MrRCE()
->>> m.fit(X, Y) # X and Y are matrices of shapes (n,p) and (n,q) correspondingly
->>> m.B_hat # estimated coefficient matrix
->>> m.rho # estimated correlation coefficient
->>> m.sigma # estimated sd for coefficients
->>> m.Sigma # estimated covariance matrix for the error terms
->>> m.Omega # estimated precision matrix for the error terms
+```python
+from mrrce import MrRCE
+m = MrRCE()
+m.fit(X, Y) # X and Y are matrices of shapes (n,p) and (n,q) correspondingly
+m.B_hat     # estimated coefficient matrix
+m.rho       # estimated correlation coefficient
+m.sigma     # estimated sd for coefficients
+m.Sigma     # estimated covariance matrix for the error terms
+m.Omega     # estimated precision matrix for the error terms
 ```
 
 See full example at [this](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb) notebook.
