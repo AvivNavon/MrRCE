@@ -37,8 +37,8 @@ For help run:
 ```
 $ python run_simulation.py --help
 
-usage: run_simulation.py [-h] [--simulation-name SIMULATION_NAME] [--n N]
-                         [--output-path OUTPUT_PATH]
+usage: run_simulation.py [-h] --simulation-name SIMULATION_NAME [--n N]
+                         [--output-path OUTPUT_PATH] [--save-data]
 
 MrRCE simulations.
 
@@ -50,6 +50,8 @@ optional arguments:
   --n N                 number of repetitions
   --output-path OUTPUT_PATH
                         output folder
+  --save-data           whether to save the simulation data
+
 
 ```
 

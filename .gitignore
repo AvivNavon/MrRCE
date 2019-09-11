@@ -9,7 +9,8 @@
 
 *approx.py
 notes
-output/
+output/results/
+output/data/
 
 # Packages #
 ############

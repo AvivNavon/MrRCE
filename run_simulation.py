@@ -27,7 +27,7 @@ parser.add_argument(
 )
 parser.add_argument('--n', type=int, default=200, help='number of repetitions')
 parser.add_argument('--output-path', default='output', help='output folder')
-parser.add_argument('--save-data', action="store_true")
+parser.add_argument('--save-data', action='store_true', help='whether to save the simulation data')
 args = parser.parse_args()
 
 simulation_params = get_simulation_settings(args.simulation_name)
@@ -133,7 +133,7 @@ if args.save_data:
 
 # plot
 to_plot = (
-    results_df[['rho', 'GroupLasso', 'OLS', 'Ridge', 'MrRCEApprox', 'MrRCE']].
+    results_df[['rho', 'GroupLasso', 'MrRCE', 'OLS', 'Ridge']].
     groupby('rho', as_index=False).
     mean().
     melt(
