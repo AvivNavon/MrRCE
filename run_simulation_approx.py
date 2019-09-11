@@ -1,12 +1,11 @@
 import argparse
 import logging
 import os
-import pickle
 import warnings
 from pathlib import Path
 
 import matplotlib
-matplotlib.use('PS')  # noqa: fix mac OS issue
+matplotlib.use('PS')  # fix mac OS issue
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,12 +21,10 @@ from simulations.simulation_utils import generate_data, model_error
 parser = argparse.ArgumentParser(description='MrRCE simulations.')
 parser.add_argument(
     '--simulation-name',
-    required=True,
     help="simulation mane, one of ['ar_dense', 'ar_sparse', 'fgn', 'equi', 'identity']"
 )
 parser.add_argument('--n', type=int, default=200, help='number of repetitions')
 parser.add_argument('--output-path', default='output', help='output folder')
-parser.add_argument('--save-data', action="store_true")
 args = parser.parse_args()
 
 simulation_params = get_simulation_settings(args.simulation_name)
@@ -38,9 +35,6 @@ plots_path = out_path / "plots"
 plots_path.mkdir(parents=True, exist_ok=True)
 results_path = out_path / "results"
 results_path.mkdir(parents=True, exist_ok=True)
-if args.save_data:
-    data_path = out_path / "data"
-    data_path.mkdir(parents=True, exist_ok=True)
 
 # logging
 logger = logging.getLogger()
@@ -60,11 +54,10 @@ logging.info(f"running simulation {args.simulation_name} with {args.n} replicati
 np.random.seed(1)  # for reproducibility
 results = []
 convergence_results = []
-data = []
 
 with warnings.catch_warnings():
     # No need to see the convergence warnings on this grid:
-    # there will always be points that will not converge
+    # they will always be points that will not converge
     # during the cross-validation
     warnings.simplefilter('ignore', ConvergenceWarning)
     pass
@@ -77,9 +70,9 @@ for rep in tqdm(range(1, args.n + 1), desc="repetition loop"):
             os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses (n_jobs > 1)
 
             X, Y, B, Sigma, Sigma_X = generate_data(rho=rho, **simulation_params)
-            # MrRCE
-            mrrce = MrRCE(glasso_max_iter=200, max_iter=150, tol_glasso=1e-3)
+            mrrce = MrRCE(glasso_max_iter=1000, glasso_n_jobs=-1, max_iter=150, tol_glasso=1e-3)
             mrrce.fit(X, Y)
+
             # OLS
             lm = LinearRegression(fit_intercept=False).fit(X, Y)
             B_ols = np.matrix(lm.coef_.transpose())
@@ -106,11 +99,8 @@ for rep in tqdm(range(1, args.n + 1), desc="repetition loop"):
                     iter_number=rep,
                     rho=rho,
                     convergence_path=mrrce.convergence_path,
-                    n_iters=mrrce.n_iters,
                 )
             )
-
-            data.append((X, Y, B))
 
 # create a data frame with the data
 results_df = pd.DataFrame(results)
@@ -127,13 +117,9 @@ convergence_df.to_json(
     lines=True
 )
 
-# save data if needed
-if args.save_data:
-    pickle.dump(data, open(data_path / f"simulation_data_{args.simulation_name}.pkl", "wb"))
-
 # plot
 to_plot = (
-    results_df[['rho', 'GroupLasso', 'OLS', 'Ridge', 'MrRCEApprox', 'MrRCE']].
+    results_df[['rho', 'GroupLasso', 'MrRCE', 'OLS', 'Ridge']].
     groupby('rho', as_index=False).
     mean().
     melt(
@@ -154,7 +140,7 @@ ax.legend(
     loc='upper center',
     fancybox=True,
     shadow=True,
-    ncol=5,
+    ncol=4,
     fontsize='x-large',
     bbox_to_anchor=(0.5, 1.15)
 )

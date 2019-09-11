@@ -7,6 +7,10 @@
 *.o
 *.so
 
+*approx.py
+notes
+output/
+
 # Packages #
 ############
 # it's better to unpack these files and commit the raw source
@@ -51,7 +55,8 @@ __pycache__
 
 # folders #
 ###########
-#results
-#plots
+output/data/
+real-data/
 
 .idea/
+*.log

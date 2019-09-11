@@ -70,7 +70,7 @@ python run_simulation.py --simulation-name equi --n 200
 will run the equicorrelation (matrix) simulation with 200 replications (for each value of the correlation coefficient, rho), and the outcome should look like the following:
 
  <p align="center"> 
-    <img src="https://github.com/AvivNavon/MrRCE/blob/master/plots/simulation_plot_ar_dense.png" width="700">
+    <img src="https://github.com/AvivNavon/MrRCE/blob/master/output/plots/simulation_plot_equi.png" width="700">
  </p>
 
 ## Example

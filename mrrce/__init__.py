@@ -1,1 +1,1 @@
-from .model import MrRCE
+from .model import MrRCE  # noq
