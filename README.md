@@ -79,13 +79,13 @@ Example of running MrRCE:
 
 ```python
 from mrrce import MrRCE
-m = MrRCE()
-m.fit(X, Y) # X and Y are matrices of shapes (n,p) and (n,q) correspondingly
-m.Gamma     # estimated coefficient matrix
-m.rho       # estimated correlation coefficient
-m.sigma     # estimated sd for coefficients
-m.Sigma     # estimated covariance matrix for the error terms
-m.Omega     # estimated precision matrix for the error terms
+mrrce = MrRCE()
+mrrce.fit(X, Y) # X and Y are matrices of shapes (n,p) and (n,q) correspondingly
+mrrce.Gamma     # estimated coefficient matrix
+mrrce.rho       # estimated correlation coefficient
+mrrce.sigma     # estimated sd for coefficients
+mrrce.Sigma     # estimated covariance matrix for the error terms
+mrrce.Omega     # estimated precision matrix for the error terms
 ```
 
 See full example at [this](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb) notebook.
