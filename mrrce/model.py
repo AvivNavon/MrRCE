@@ -16,7 +16,8 @@ from sklearn.model_selection import KFold
 
 from .data import Data
 
-logging.basicConfig(level=logging.INFO)
+log_format = '%(asctime)-10s: %(message)s'
+logging.basicConfig(format=log_format, level=logging.INFO)
 
 
 class MrRCE:
@@ -67,6 +68,7 @@ class MrRCE:
         self.Sigma = None
         self.convergence_path = None
         self.n_iters = None
+        self.alpha_best = None
 
     @staticmethod
     def fast_logdet(matrix):
@@ -243,6 +245,7 @@ class MrRCE:
         best_alpha = alphas[best_alpha_idx]
 
         # refit
+        self.alpha_best = best_alpha
         self._fit_wo_cv(z_matrix, y_matrix, alpha=best_alpha)
 
     def _set_alpha_range(self, emp_cov):
