@@ -69,7 +69,7 @@ where `<N>` is an integer for the number of replications. For example, the follo
 ```
 python run_simulation.py --simulation-name equi --n 200
 ```
-will run the equicorrelation (matrix) simulation with 200 replications (for each value of the correlation coefficient, rho), and the outcome should look like the following:
+will run the equicorrelation (covariance matrix) simulation with 200 replications (for each value of the correlation coefficient, rho), and the outcome should look like the following:
 
  <p align="center"> 
     <img src="https://github.com/AvivNavon/MrRCE/blob/master/output/plots/simulation_plot_equi.png" width="700">
