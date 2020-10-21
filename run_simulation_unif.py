@@ -1,11 +1,12 @@
 import argparse
 import logging
 import os
+import pickle
 import warnings
 from pathlib import Path
 
 import matplotlib
-matplotlib.use('PS')  # fix mac OS issue
+matplotlib.use('PS')  # noqa: fix mac OS issue
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -15,26 +16,31 @@ from tqdm import tqdm
 
 from mrrce import MrRCE
 from simulations.parameters import RHOS, get_simulation_settings
-from simulations.simulation_utils import generate_data, model_error
+from simulations.simulation_utils import generate_data_, model_error
 
 
 parser = argparse.ArgumentParser(description='MrRCE simulations.')
 parser.add_argument(
     '--simulation-name',
+    required=True,
     help="simulation mane, one of ['ar_dense', 'ar_sparse', 'fgn', 'equi', 'identity']"
 )
 parser.add_argument('--n', type=int, default=200, help='number of repetitions')
 parser.add_argument('--output-path', default='output', help='output folder')
+parser.add_argument('--save-data', action='store_true', help='whether to save the simulation data')
 args = parser.parse_args()
 
 simulation_params = get_simulation_settings(args.simulation_name)
 
 # create folder structure
 out_path = Path(args.output_path)
-plots_path = out_path / "plots"
+plots_path = out_path / "plots/unif"
 plots_path.mkdir(parents=True, exist_ok=True)
-results_path = out_path / "results"
+results_path = out_path / "results/unif"
 results_path.mkdir(parents=True, exist_ok=True)
+if args.save_data:
+    data_path = out_path / "data/unif"
+    data_path.mkdir(parents=True, exist_ok=True)
 
 # logging
 logger = logging.getLogger()
@@ -54,53 +60,58 @@ logging.info(f"running simulation {args.simulation_name} with {args.n} replicati
 np.random.seed(1)  # for reproducibility
 results = []
 convergence_results = []
+data = []
 
 with warnings.catch_warnings():
     # No need to see the convergence warnings on this grid:
-    # they will always be points that will not converge
+    # there will always be points that will not converge
     # during the cross-validation
     warnings.simplefilter('ignore', ConvergenceWarning)
     pass
 
 for rep in tqdm(range(1, args.n + 1), desc="repetition loop"):
-    for rho in tqdm(RHOS, desc="rho values loop"):
-        with warnings.catch_warnings():  # for clean output
-            warnings.simplefilter('ignore', ConvergenceWarning)
-            warnings.simplefilter('ignore', RuntimeWarning)
-            os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses (n_jobs > 1)
+    # for rho in tqdm(RHOS, desc="rho values loop"):
+    rho = 0  # dummy variable so I won't need to change the code too much
+    with warnings.catch_warnings():  # for clean output
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        warnings.simplefilter('ignore', RuntimeWarning)
+        os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses (n_jobs > 1)
 
-            X, Y, B, Sigma, Sigma_X = generate_data(rho=rho, **simulation_params)
-            mrrce = MrRCE(glasso_max_iter=1000, glasso_n_jobs=-1, max_iter=150, tol_glasso=1e-3)
-            mrrce.fit(X, Y)
+        X, Y, B, Sigma, Sigma_X = generate_data_(**simulation_params)
+        # MrRCE
+        mrrce = MrRCE(glasso_max_iter=200, max_iter=150, tol_glasso=1e-3)
+        mrrce.fit(X, Y)
+        # OLS
+        lm = LinearRegression(fit_intercept=False).fit(X, Y)
+        B_ols = np.matrix(lm.coef_.transpose())
+        # Ridge
+        ridge = RidgeCV(fit_intercept=False).fit(X, Y)
+        B_ridge = np.matrix(ridge.coef_.transpose())
+        # Group Lasso
+        gl = MultiTaskLassoCV(fit_intercept=False, cv=3).fit(X, Y)
+        B_gl = np.matrix(gl.coef_.T)
+        # Results
+        results.append(
+            dict(
+                rho=rho,
+                rho_hat=mrrce.rho,
+                sigma_hat=mrrce.sigma,
+                MrRCE=model_error(B, mrrce.Gamma, Sigma_X),
+                OLS=model_error(B, B_ols, Sigma_X),
+                Ridge=model_error(B, B_ridge, Sigma_X),
+                GroupLasso=model_error(B, B_gl, Sigma_X)
+            )
+        )
+        convergence_results.append(
+            dict(
+                iter_number=rep,
+                rho=rho,
+                convergence_path=mrrce.convergence_path,
+                n_iters=mrrce.n_iters,
+            )
+        )
 
-            # OLS
-            lm = LinearRegression(fit_intercept=False).fit(X, Y)
-            B_ols = np.matrix(lm.coef_.transpose())
-            # Ridge
-            ridge = RidgeCV(fit_intercept=False).fit(X, Y)
-            B_ridge = np.matrix(ridge.coef_.transpose())
-            # Group Lasso
-            gl = MultiTaskLassoCV(fit_intercept=False, cv=3).fit(X, Y)
-            B_gl = np.matrix(gl.coef_.T)
-            # Results
-            results.append(
-                dict(
-                    rho=rho,
-                    rho_hat=mrrce.rho,
-                    sigma_hat=mrrce.sigma,
-                    MrRCE=model_error(B, mrrce.Gamma, Sigma_X),
-                    OLS=model_error(B, B_ols, Sigma_X),
-                    Ridge=model_error(B, B_ridge, Sigma_X),
-                    GroupLasso=model_error(B, B_gl, Sigma_X)
-                )
-            )
-            convergence_results.append(
-                dict(
-                    iter_number=rep,
-                    rho=rho,
-                    convergence_path=mrrce.convergence_path,
-                )
-            )
+        data.append((X, Y, B))
 
 # create a data frame with the data
 results_df = pd.DataFrame(results)
@@ -116,6 +127,10 @@ convergence_df.to_json(
     orient="records",
     lines=True
 )
+
+# save data if needed
+if args.save_data:
+    pickle.dump(data, open(data_path / f"simulation_data_{args.simulation_name}.pkl", "wb"))
 
 # plot
 to_plot = (
@@ -140,7 +155,7 @@ ax.legend(
     loc='upper center',
     fancybox=True,
     shadow=True,
-    ncol=4,
+    ncol=5,
     fontsize='x-large',
     bbox_to_anchor=(0.5, 1.15)
 )

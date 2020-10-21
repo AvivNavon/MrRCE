@@ -1,11 +1,14 @@
-# Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models
+# MrRCE
 
-This is an implementation of the Multivariate random Regression with Covariance Estimation (MrRCE) algorithm, 
+Implementation of _Capturing Between-Tasks Covariance and Similarities Using Multivariate Linear Mixed Models_, Volume 14, Number 2 (2020), Electronic Journal of Statistics. 
+
+Specifically, this is an implementation of the _Multivariate random Regression with Covariance Estimation_ (MrRCE) algorithm, 
 designed to take advantage of correlations and similarities among responses and coefficients, in a multi-task regression framework
-(see the [paper](https://arxiv.org/abs/1812.03662) for details).
+(see the [paper](https://projecteuclid.org/euclid.ejs/1603245663) for details).
 
 ## Useful Links
 
+- [Paper](https://projecteuclid.org/euclid.ejs/1603245663)
 - [GitHub repo](https://github.com/AvivNavon/MrRCE)
 - [Example](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb)
 
@@ -91,3 +94,23 @@ mrrce.Omega     # estimated precision matrix for the error terms
 ```
 
 See full example at [this](https://github.com/AvivNavon/MrRCE/blob/master/example.ipynb) notebook.
+
+## Citation
+
+If you find `MrRCE` to be useful in your own research, please consider citing the following paper:
+
+```bib
+@ARTICLE{NavRos2020,
+    AUTHOR = {Aviv Navon and Saharon Rosset},
+     TITLE = {Capturing between-tasks covariance and similarities using multivariate linear mixed models},
+   JOURNAL = {Electron. J. Statist.},
+  FJOURNAL = {Electronic Journal of Statistics},
+      YEAR = {2020},
+    VOLUME = {14},
+    NUMBER = {2},
+     PAGES = {3821-3844},
+      ISSN = {1935-7524},
+       DOI = {10.1214/20-EJS1764},
+      SICI = {1935-7524(2020)14:2<3821:CBTCAS>2.0.CO;2-2},
+}
+```
